@@ -55,6 +55,7 @@ The class from which to create an API instance.
 `\Grithin\Api\Standard` trait is used for convenient integration with Conform and ResponseMaker.
 
 ```php
+namespace MyApi;
 class V1{
 	use \Grithin\Api\Standard;
 
@@ -62,7 +63,7 @@ class V1{
 		$rm = $this->response_maker($input);
 
 		$validation = [
-			'user_id'=>'!v.filled
+			'user_id'=>'!v.filled'
 		];
 
 		if($conformed = $rm->validate($validation)){
@@ -71,6 +72,111 @@ class V1{
 		return $rm->result(); # this result will have the validation error
 	}
 }
+```
+
+## Full Example
+```php
+class MyApiV1{
+	use \Grithin\Api\Standard;
+
+	function get_123($input){
+		$rm = $this->response_maker($input);
+
+		$validation = [
+			'user_id'=>'!v.filled'
+		];
+
+		if($conformed = $rm->validate($validation)){
+			return $rm->result(123);
+		}
+		return $rm->result(); # this result will have the validation error
+	}
+}
+
+
+$_POST = ['method'=>'get_123', 'input'=>['user_id'=>'bob']];
+
+
+use \Grithin\Http;
+
+use \Grithin\Api\RequestMapper;
+use \Grithin\Api\ResponseMaker;
+
+# \MyApi\V1 is the api instance on to which the mapper maps the request
+$mapper = new RequestMapper(new \MyApiV1);
+
+try{
+	# well call the mapper, and minimize the standard response, which is expected from the api return.  We then return the result as a HTTP JSON response since this is a HTTP API.
+	Http::endJson(ResponseMaker::minimize($mapper->call()));
+}catch(Exception $e){
+	# In the event either the mapper threw an error or the api instance threw an error, catch it, create a standard minimized response for it, and return a HTTP JSON response with it.
+	$rm = new ResponseMaker();
+	$rm->add_error_message($e->getMessage());
+	Http::endJson(ResponseMaker::minimize($rm->result()));
+}
+
+
+```
+
+## Testing
+```php
+$assert = function($ought, $is){
+	if($ought != $is){
+		throw new Exception('ought is not is : '.\Grithin\Debug::pretty([$ought, $is]));
+	}
+};
+
+
+
+class MyApiV1{
+	use \Grithin\Api\Standard;
+
+	function get_123($input){
+		$rm = $this->response_maker($input);
+
+		$validation = [
+			'user_id'=>'!v.filled'
+		];
+
+		if($conformed = $rm->validate($validation)){
+			return $rm->result(123);
+		}
+		return $rm->result(); # this result will have the validation error
+	}
+}
+
+
+
+use \Grithin\Api\RequestMapper;
+use \Grithin\Api\ResponseMaker;
+
+$run_api = function(){
+	# \MyApi\V1 is the api instance on to which the mapper maps the request
+	$mapper = new RequestMapper(new \MyApiV1);
+
+	try{
+		# well call the mapper, and minimize the standard response, which is expected from the api return.  We then return the result as a HTTP JSON response since this is a HTTP API.
+		return \Grithin\Tool::json_encode(ResponseMaker::minimize($mapper->call()));
+	}catch(Exception $e){
+		# In the event either the mapper threw an error or the api instance threw an error, catch it, create a standard minimized response for it, and return a HTTP JSON response with it.
+		$rm = new ResponseMaker();
+		$rm->add_error_message($e->getMessage());
+		return \Grithin\Tool::json_encode(ResponseMaker::minimize($rm->result()));
+	}
+};
+
+
+$_POST = ['method'=>'get_123', 'input'=>['user_id'=>'bob']];
+$assert('{"status":"success","data":123}', $run_api());
+
+$_POST = ['method'=>'get_123', 'input'=>[]];
+$assert('{"status":"fail","errors":[{"fields":["user_id"],"message":"v.filled"}]}', $run_api());
+
+$_POST = ['method'=>'bad_method'];
+$assert('{"status":"fail","errors":[{"message":"Api method not found \"bad_method\""}]}', $run_api());
+
+$_POST = [];
+$assert('{"status":"fail","errors":[{"message":"No api method used"}]}', $run_api());
 ```
 
 # Notes
