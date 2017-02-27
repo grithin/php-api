@@ -1,9 +1,14 @@
 <?
+/* About
+Method mapping on to an API instance, passing in the standard input.  The Api instance gets an attribute `rm` and `response_maker` set as the ResponseMaker instance - although the Api instance could instantiate its own ResponseMaker.
+*/
+
 namespace Grithin\Api;
 
 use \Grithin\Conform;
 use \Grithin\Arrays;
 use \Exception;
+
 
 class RequestMapper{
 	public $instance;
@@ -25,6 +30,10 @@ class RequestMapper{
 		}catch(Exception $e){
 			throw new Exception('Api method not found "'.$this->request['method'].'"');
 		}
+
+		$conform = Conform::standard_instance($this->request['input']);
+		$this->api->response_maker = $this->api->rm = new ResponseMaker($conform);
+
 		return $fn($this->request['input']);
 	}
 }
