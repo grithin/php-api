@@ -1,13 +1,8 @@
 <?
 namespace Grithin\Api;
 
-use \Grithin\Conform;
-
-# may not be necessary
 trait Standard{
-	protected function response_maker($input){
-		$conform = Conform::standard_instance($input);
-		$rm = new ResponseMaker($conform);
-		return $rm;
-	}
+	public $request; # request object with `input` and `method` attributes
+	public $conform; # shared conform instance
+	public $response_maker; # chared ResponseMaker instance
 }

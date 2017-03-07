@@ -6,6 +6,7 @@ use \Grithin\Conform;
 class ResponseMaker{
 	public $conform;
 	public $response = ['status'=>'', 'errors'=>[], 'data'=>null];
+	public $resulted = false; # whether result() has already been called
 
 	function __construct($conform=null){
 		if($conform){
@@ -20,6 +21,8 @@ class ResponseMaker{
 	}
 	# determine and set  status, and optionally set data
 	function result($data=null){
+		$this->result = true;
+
 		# optionally  set data
 		if($data !== null){
 			$this->response['data'] = $data;
@@ -43,6 +46,46 @@ class ResponseMaker{
 		}
 		return $this->response;
 	}
+	function set_success(){
+		$this->response['status'] = 'success';
+	}
+	function set_fail(){
+		$this->response['status'] = 'fail';
+	}
+
+
+	# call result if not previously called
+	function result_once($data=null){
+		if(!$this->resulted){
+			return $this->result($data);
+		}
+		return $this->response;
+	}
+
+	/*
+	In addition to the handling of the method result in self::result(), this adds an interpretation of the passed data:
+	-	`false` = fail
+	-	`true` = success
+	-	other = default
+
+	The effort here is to reduce unnecessary compoonents of the response, or unnecessary comonents of the Api instance, changing `{"status":"success","data":true}` to `{"status":"success"}`
+	*/
+	function interpretted_result_once($data=null){
+		$data = $this->data_interpret($data);
+		return $this->result_once($data);
+	}
+	# special handling of `true` and `false`, interpretted as status indication, and removed from `data`
+	function data_interpret($data=null){
+		if($data === false){
+			$this->set_fail();
+			$data = null;
+		}elseif($data === true){
+			$this->set_success();
+			$data = null;
+		}
+		return $data;
+	}
+
 	/*
 	Set errors into response and return false if errors, otherwise return conformed input
 	*/
