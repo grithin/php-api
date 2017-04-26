@@ -57,6 +57,10 @@ class Tools{
 	function wrapped_call($api_instance, $request=null){
 		try{
 			self::wrap($api_instance, $request);
+		}catch(\Grithin\ConformException $e){ # allow any level to throw a Conform exception which create a standard response
+			$conform = $e->details;
+			$api_instance->response_maker->errors_add($conform->get_errors());
+			return $api_instance->response_maker->result_once();
 		}catch(Exception $e){
 			$api_instance->response_maker->add_error_message($e->getMessage());
 			return $api_instance->response_maker->result_once();
@@ -64,6 +68,10 @@ class Tools{
 		try{
 			$method_return = self::call($api_instance, $api_instance->request);
 			return $api_instance->response_maker->interpretted_result_once($method_return);
+		}catch(\Grithin\ConformException $e){ # allow any level to throw a Conform exception which create a standard response
+			$conform = $e->details;
+			$api_instance->response_maker->errors_add($conform->get_errors());
+			return $api_instance->response_maker->result_once();
 		}catch(Exception $e){
 			$api_instance->response_maker->add_error_message($e->getMessage());
 			return $api_instance->response_maker->result_once();

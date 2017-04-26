@@ -100,6 +100,9 @@ class ResponseMaker{
 	function add_error_message($error){
 		$this->response['errors'][] = ['message'=>$error];
 	}
+	function errors_add($errors){
+		$this->response['errors'] = array_merge($this->response['errors'], $errors);
+	}
 
 	static function minimize($result){
 		if(!$result['errors']){
