@@ -21,7 +21,7 @@ class ResponseMaker{
 	}
 	# determine and set  status, and optionally set data
 	function result($data=null){
-		$this->result = true;
+		$this->resulted = true;
 
 		# optionally  set data
 		if($data !== null){
