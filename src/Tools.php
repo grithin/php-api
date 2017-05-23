@@ -77,10 +77,20 @@ class Tools{
 			return $api_instance->response_maker->result_once();
 		}
 	}
+	# `wrapped_call`, but without the catches
+	function wrapped_call_debug($api_instance, $request=null){
+		self::wrap($api_instance, $request);
+		$method_return = self::call($api_instance, $api_instance->request);
+		return $api_instance->response_maker->interpretted_result_once($method_return);
+	}
 	# end process with json response
 	function wrapped_call_response($api_instance, $request=null){
 		Http::endJson(self::wrapped_call($api_instance, $request));
 	}
+	function wrapped_call_response_debug($api_instance, $request=null){
+		ppe(self::wrapped_call_debug($api_instance, $request));
+	}
+
 	# end process with minimized json response
 	function minimized_wrapped_call_response($api_instance, $request=null){
 		Http::endJson(ResponseMaker::minimize(self::wrapped_call($api_instance, $request)));
