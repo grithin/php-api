@@ -15,6 +15,20 @@ class Tools{
 		}
 
 		try{
+			#+ since can't use protected/public/private to indicate what, in an API class is available as an API method, and since it is convenient to have non-api methods within the class which is also the Api class, use variables to indicate {
+			if($api_instance->api_method_included){
+				if(!in_array($request->method,$api_instance->api_method_included)){
+					throw new Exception('Api method not allowed "'.$request->method.'"');
+				}
+			}
+			if($api_instance->api_method_excluded){
+				if(in_array($request->method,$api_instance->api_method_excluded)){
+					throw new Exception('Api method not allowed "'.$request->method.'"');
+				}
+			}
+			#+ }
+
+
 			$fn = Arrays::got($api_instance, $request->method);
 		}catch(Exception $e){
 			throw new Exception('Api method not found "'.$request->method.'"');
@@ -58,24 +72,27 @@ class Tools{
 		try{
 			self::wrap($api_instance, $request);
 		}catch(\Grithin\ConformException $e){ # allow any level to throw a Conform exception which create a standard response
-			$conform = $e->details;
-			$api_instance->response_maker->errors_add($conform->get_errors());
-			return $api_instance->response_maker->result_once();
+			return self::conform_exception_handle($e, $api_instance);
 		}catch(Exception $e){
-			$api_instance->response_maker->add_error_message($e->getMessage());
-			return $api_instance->response_maker->result_once();
+			return self::exception_handle($e, $api_instance);
 		}
 		try{
 			$method_return = self::call($api_instance, $api_instance->request);
 			return $api_instance->response_maker->interpretted_result_once($method_return);
 		}catch(\Grithin\ConformException $e){ # allow any level to throw a Conform exception which create a standard response
-			$conform = $e->details;
-			$api_instance->response_maker->errors_add($conform->get_errors());
-			return $api_instance->response_maker->result_once();
+			return self::conform_exception_handle($e, $api_instance);
 		}catch(Exception $e){
-			$api_instance->response_maker->add_error_message($e->getMessage());
-			return $api_instance->response_maker->result_once();
+			return self::exception_handle($e, $api_instance);
 		}
+	}
+	function conform_exception_handle($e, $api_instance){
+		$conform = $e->details;
+		$api_instance->response_maker->errors_add($conform->get_errors());
+		return $api_instance->response_maker->result_once();
+	}
+	function exception_handle($e, $api_instance){
+		$api_instance->response_maker->add_error_message($e->getMessage());
+		return $api_instance->response_maker->result_once();
 	}
 	# `wrapped_call`, but without the catches
 	function wrapped_call_debug($api_instance, $request=null){
@@ -94,5 +111,14 @@ class Tools{
 	# end process with minimized json response
 	function minimized_wrapped_call_response($api_instance, $request=null){
 		Http::endJson(ResponseMaker::minimize(self::wrapped_call($api_instance, $request)));
+	}
+	function pseudo_api_instance($fn, $input=null){
+		if($input === null){
+			$input = Conform::post();
+		}
+		$api_instance = new \StdClass;
+		$api_instance->method = \Closure::bind($fn, $api_instance);
+		$api_instance->request = (object)['method'=>'method', 'input'=>$input];
+		return $api_instance;
 	}
 }
