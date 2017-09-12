@@ -87,7 +87,6 @@ class Tools{
 	}
 	function conform_exception_handle($e, $api_instance){
 		$conform = $e->details;
-		$api_instance->response_maker->errors_add($conform->get_errors());
 		return $api_instance->response_maker->result_once();
 	}
 	function exception_handle($e, $api_instance){
@@ -112,6 +111,7 @@ class Tools{
 	function minimized_wrapped_call_response($api_instance, $request=null){
 		Http::endJson(ResponseMaker::minimize(self::wrapped_call($api_instance, $request)));
 	}
+	# create an API instance from a function rather than an API class
 	function pseudo_api_instance($fn, $input=null){
 		if($input === null){
 			$input = Conform::post();

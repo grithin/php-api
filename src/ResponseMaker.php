@@ -20,6 +20,10 @@ class ResponseMaker{
 		$this->response['data'] = $data;
 	}
 	# determine and set  status, and optionally set data
+	/* Notes
+	-	will merge conform errors into response errors
+	-	will set status to fail if errors present
+	*/
 	function result($data=null){
 		$this->resulted = true;
 
@@ -33,7 +37,7 @@ class ResponseMaker{
 			if(!$this->response['errors']){
 				$this->response['errors'] = [];
 			}
-			$this->response['errors'] = array_merge($this->response['errors'], $this->conform->errors);
+			$this->response['errors'] = array_merge($this->response['errors'], $this->conform->get_errors());
 		}
 
 		# determine the status if it has not already been set
