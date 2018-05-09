@@ -91,6 +91,11 @@ class Tools{
 	}
 	function exception_handle($e, $api_instance){
 		$api_instance->response_maker->add_error_message($e->getMessage());
+		if($api_instance->exception_handler){
+			$api_instance->exception_handler($e);
+		}elseif($current_exception_handler = \Grithin\Debug::current_exception_handler()){
+			$current_exception_handler($e);
+		}
 		return $api_instance->response_maker->result_once();
 	}
 	# `wrapped_call`, but without the catches
