@@ -85,8 +85,11 @@ class Tools{
 			return self::exception_handle($e, $api_instance);
 		}
 	}
+
 	function conform_exception_handle($e, $api_instance){
-		$conform = $e->details;
+		$conform = $e->details; # ConformException has `details` as the Conform instance
+		$api_instance->response_maker->response['errors'] = array_merge($api_instance->response_maker->response['errors'], $this->conform->get_errors());
+		$conform->remove_errors(); # so as to not duplicate in `result_once` call
 		return $api_instance->response_maker->result_once();
 	}
 	function exception_handle($e, $api_instance){
@@ -94,6 +97,7 @@ class Tools{
 		if($api_instance->exception_handler){
 			$api_instance->exception_handler($e);
 		}elseif($current_exception_handler = \Grithin\Debug::current_exception_handler()){
+			$api_instance->response_maker->add_error_message($e->getMessage());
 			$current_exception_handler($e);
 		}
 		return $api_instance->response_maker->result_once();

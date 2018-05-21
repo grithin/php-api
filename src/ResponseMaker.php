@@ -52,9 +52,11 @@ class ResponseMaker{
 	}
 	function set_success(){
 		$this->response['status'] = 'success';
+		return $this;
 	}
 	function set_fail(){
 		$this->response['status'] = 'fail';
+		return $this;
 	}
 
 
@@ -101,11 +103,22 @@ class ResponseMaker{
 		}
 		return $this->conform->output;
 	}
-	function add_error_message($error){
-		$this->response['errors'][] = ['message'=>$error];
+
+	public function error_message_add($message){
+		$this->response['errors'][] = ['message'=>$message];
+		return $this;
 	}
-	function errors_add($errors){
+	# deprecated
+	public function add_error_message(){
+		$renamed = 'error_message_add';
+		return call_user_func_array([$this, $renamed], func_get_args());
+	}
+	public function errors_add($errors){
 		$this->response['errors'] = array_merge($this->response['errors'], $errors);
+		return $this;
+	}
+	public function minimized(){
+		return self::minimize($this->result_once());
 	}
 
 	static function minimize($result){
