@@ -58,6 +58,9 @@ class ResponseMaker{
 		$this->response['status'] = 'fail';
 		return $this;
 	}
+	function error($error){
+		$this->response['errors'] = [['message'=>$error]];
+	}
 
 
 	# call result if not previously called
