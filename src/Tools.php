@@ -93,7 +93,7 @@ class Tools{
 		return $api_instance->response_maker->result_once();
 	}
 	function exception_handle($e, $api_instance){
-		if($api_instance->exception_handler){
+		if($api_instance->exception_handler  || method_exists($api_instance, 'exception_handler')){
 			$api_instance->exception_handler($e);
 		}elseif($current_exception_handler = \Grithin\Debug::current_exception_handler()){
 			$api_instance->response_maker->add_error_message($e->getMessage());
