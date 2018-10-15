@@ -11,19 +11,19 @@ class Tools{
 	# using some method and input, call that instance method (which is potentially deep)
 	function call($api_instance, $request){
 		if(!$request->method){
-			throw new Exception('No api method used');
+			throw new \Grithin\Api\Exception('No api method used');
 		}
 
 		try{
 			#+ since can't use protected/public/private to indicate what, in an API class is available as an API method, and since it is convenient to have non-api methods within the class which is also the Api class, use variables to indicate {
 			if($api_instance->api_method_included){
 				if(!in_array($request->method,$api_instance->api_method_included)){
-					throw new Exception('Api method not allowed "'.$request->method.'"');
+					throw new \Grithin\Api\Exception('Api method not allowed "'.$request->method.'"');
 				}
 			}
 			if($api_instance->api_method_excluded){
 				if(in_array($request->method,$api_instance->api_method_excluded)){
-					throw new Exception('Api method not allowed "'.$request->method.'"');
+					throw new \Grithin\Api\Exception('Api method not allowed "'.$request->method.'"');
 				}
 			}
 			#+ }
@@ -31,7 +31,7 @@ class Tools{
 
 			$fn = Arrays::got($api_instance, $request->method);
 		}catch(Exception $e){
-			throw new Exception('Api method not found "'.$request->method.'"');
+			throw new \Grithin\Api\Exception('Api method not found "'.$request->method.'"');
 		}
 
 		return $fn($request->input);
@@ -81,6 +81,9 @@ class Tools{
 			return $api_instance->response_maker->interpretted_result_once($method_return);
 		}catch(\Grithin\ConformException $e){ # allow any level to throw a Conform exception which create a standard response
 			return self::conform_exception_handle($e, $api_instance);
+		}catch(\Grithin\Api\Exception $e){
+			$api_instance->response_maker->response['errors'][] = ['message'=>$e->getMessage()];
+			return $api_instance->response_maker->result_once();
 		}catch(Exception $e){
 			return self::exception_handle($e, $api_instance);
 		}
