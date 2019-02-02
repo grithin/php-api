@@ -61,7 +61,7 @@ class Tools{
 
 		#+ provide opportunity for api instance to adjust wrapped tools after wrapping {
 		if(method_exists($api_instance, 'api_initialise')){
-			$api_instance->api_initialise();
+			$api_instance->api_initialise($api_instance->request->input);
 		}
 		#+ }
 	}
