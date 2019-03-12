@@ -5,6 +5,7 @@ use \Grithin\Http;
 use \Grithin\Conform;
 use \Grithin\Arrays;
 use \Exception;
+use \Error;
 
 
 class Tools{
@@ -81,6 +82,8 @@ class Tools{
 			return self::conform_exception_handle($e, $api_instance);
 		}catch(Exception $e){
 			return self::exception_handle($e, $api_instance);
+		}catch(Error $e){
+			return self::exception_handle($e, $api_instance);
 		}
 		try{
 			$method_return = self::call($api_instance, $api_instance->request);
@@ -91,6 +94,9 @@ class Tools{
 			$api_instance->response_maker->response['errors'][] = ['message'=>$e->getMessage()];
 			return $api_instance->response_maker->result_once();
 		}catch(Exception $e){
+			return self::exception_handle($e, $api_instance);
+		}
+		catch(Error $e){
 			return self::exception_handle($e, $api_instance);
 		}
 	}
