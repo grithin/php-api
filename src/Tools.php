@@ -38,24 +38,26 @@ class Tools{
 		return $fn($request->input);
 	}
 
-	/* Philosophy behind wrapping
-	There is no particular need for the api instance to have untouchable attributes, so might as well just use attributes as a standard
-	*/
-	function wrap($api_instance, $request=null){
+	static function request_resolve($request){
 		if($request === null){
 			$request = Conform::post();
 			#+ handle the case of no method specified, use request method to determine method
-			if(!$request['method']){ # this is not foolproof, since the input can include a key `method` which would upset this fallback
+			if(!$request['method'] && !$request['requests']){ # this is not foolproof, since the input can include a key `method` which would upset this fallback
 				$request['input'] = $request;
 				$map = ['DELETE'=>'delete','PUT'=>'create_update','POST'=>'create','PATCH'=>'update','GET'=>'read'];
 				$request['method'] = $map[$_SERVER['REQUEST_METHOD']];
 			}
 		}
 		#+ create standard wrapped tools {
-		if(!$api_instance->request){
-			$request = (object)$request; # to pass by reference
-			$api_instance->request = $request;
-		}
+		return (object)$request; # to pass by reference
+	}
+
+	/* Philosophy behind wrapping
+	There is no particular need for the api instance to have untouchable attributes, so might as well just use attributes as a standard
+	*/
+	static function wrap($api_instance, $request=null){
+		$api_instance->request = self::request_resolve($request == null ? $api_instance->request : $request);
+
 		if(!$api_instance->conform){
 			$conform = Conform::standard_instance($api_instance->request->input);
 			$api_instance->conform = $conform;
@@ -102,19 +104,27 @@ class Tools{
 	}
 
 	function conform_exception_handle($e, $api_instance){
-		$conform = $e->details; # ConformException has `details` as the Conform instance
-		$api_instance->response_maker->response['errors'] = array_merge($api_instance->response_maker->response['errors'], $conform->get_errors());
-		$conform->remove_errors(); # so as to not duplicate in `result_once` call
-		return $api_instance->response_maker->result_once();
+		if($api_instance->response_maker){
+			$conform = $e->details; # ConformException has `details` as the Conform instance
+			$api_instance->response_maker->response['errors'] = array_merge($api_instance->response_maker->response['errors'], $conform->get_errors());
+			$conform->remove_errors(); # so as to not duplicate in `result_once` call
+			return $api_instance->response_maker->result_once();
+		}else{
+			throw $e;
+		}
 	}
 	function exception_handle($e, $api_instance){
 		if($api_instance->exception_handler  || method_exists($api_instance, 'exception_handler')){
 			$api_instance->exception_handler($e);
-		}elseif($current_exception_handler = \Grithin\Debug::current_exception_handler()){
-			$api_instance->response_maker->add_error_message($e->getMessage());
-			$current_exception_handler($e);
+		}elseif($api_instance->response_maker){
+			if($current_exception_handler = \Grithin\Debug::current_exception_handler()){
+				$api_instance->response_maker->add_error_message($e->getMessage());
+				$current_exception_handler($e);
+			}
+			return $api_instance->response_maker->result_once();
+		}else{
+			throw $e;
 		}
-		return $api_instance->response_maker->result_once();
 	}
 	# `wrapped_call`, but without the catches
 	function wrapped_call_debug($api_instance, $request=null){
@@ -131,9 +141,28 @@ class Tools{
 	}
 
 	# end process with minimized json response
-	function minimized_wrapped_call_response($api_instance, $request=null){
+	static function minimized_wrapped_call_response($api_instance, $request=null, $options=[]){
+		if($options['allow_multiple']){
+			/*
+			if `allow_multiple`, expect an array of request objects with normal `input` and `method` keys.  Collect the results from each call and return
+			*/
+			$request = self::request_resolve($request);
+			if($request->requests){
+				$requests = Arrays::from($request->requests);
+				$results = [];
+				foreach($requests as $request){
+					$results[] = ResponseMaker::minimize(self::wrapped_call(clone $api_instance, $request));
+				}
+				$return_results = function() use ($results){
+					return $results;
+				};
+				Http::endJson(ResponseMaker::minimize(self::wrapped_call(self::pseudo_api_instance($return_results))));
+			}
+
+		}
 		Http::endJson(ResponseMaker::minimize(self::wrapped_call($api_instance, $request)));
 	}
+
 	# create an API instance from a function rather than an API class
 	function pseudo_api_instance($fn, $input=null){
 		if($input === null){
@@ -144,4 +173,23 @@ class Tools{
 		$api_instance->request = (object)['method'=>'method', 'input'=>$input];
 		return $api_instance;
 	}
+
+	# remake extra path parts into standard `method` + `input` based on the $Route object
+	function path_to_method($Route=null, &$input=null){
+		# get the unparsed tokens to form them into a part1.part2 style method
+		$method = implode('.', $Route->unparsedTokens);
+
+		# only overwrite the input if there are extra path parts
+		if($method){
+			if($input === null){
+				$input = &$_POST;
+			}
+
+			$input = array_merge($input, [
+				'method'=>$method,
+				'input'=>Conform::input()
+			]);
+		}
+	}
 }
+

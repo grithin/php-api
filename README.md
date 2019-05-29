@@ -24,7 +24,17 @@ ResponseMaker handles logic involved in creating a standard response structure. 
 ```
 `status` is either `fail` or `success`.  In standard form, `errors` is always an array, and `data` is always present.  In minimized standard form, if `errors` is an empty array, it is excluded from the response, and if `data` is null, it is excluded from the response.
 
-```
-
 # Notes
 A `status` can be `success` even with errors.  This, however, requires the `status` is set to `success` prior to `ResponseMaker::result()`
+
+
+# Input
+## Api Method
+
+There are three variables containing the input (not references)
+1.	`method($input)` : the first parameter to the api method
+2.	`$api_instance->request->input`
+3.	`$api_instance->conform->input`
+
+Inputs #1 and #2 will be the same at the start of an API method.  In the event #1 is manipulated in the method, #2 serves as a back up for the original.
+It is expectable that #3 will change in accordance to what is desired for Conform to validate.
