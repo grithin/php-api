@@ -38,3 +38,14 @@ There are three variables containing the input (not references)
 
 Inputs #1 and #2 will be the same at the start of an API method.  In the event #1 is manipulated in the method, #2 serves as a back up for the original.
 It is expectable that #3 will change in accordance to what is desired for Conform to validate.
+
+
+# API Tool
+
+## Wrapped Call
+
+### Exceptions
+Errors in the api initialization or in the api method go through `Grithin\Api\Tools::exception_handle`, allowing for three cases:
+1.	api has an instance specific exception handler
+2.	there is a response maker, the error is packaged into the response and the standard exception handler is run
+3. the error is rethrown

@@ -114,14 +114,14 @@ class Tools{
 		}
 	}
 	function exception_handle($e, $api_instance){
-		if($api_instance->exception_handler  || method_exists($api_instance, 'exception_handler')){
+		if($api_instance->exception_handler  || method_exists($api_instance, 'exception_handler')){ # api instance has custom exception handler, use it
 			$api_instance->exception_handler($e);
-		}elseif($api_instance->response_maker){
-			if($current_exception_handler = \Grithin\Debug::current_exception_handler()){
+		}elseif($api_instance->response_maker){ # since there is a response_maker, some code is expecting a response, so, package the error into a response
+			if($current_exception_handler = \Grithin\Debug::current_exception_handler()){ # run the current exception handler - so the error might be logged for further detail
 				$api_instance->response_maker->add_error_message($e->getMessage());
 				$current_exception_handler($e);
 			}
-			return $api_instance->response_maker->result_once();
+			return $api_instance->response_maker->result_once(); # put the error into the response
 		}else{
 			throw $e;
 		}
