@@ -125,7 +125,7 @@ class ResponseMaker{
 	}
 
 	static function minimize($result){
-		if(!$result['errors']){
+		if(empty($result['errors'])){
 			unset($result['errors']);
 		}else{
 			foreach($result['errors'] as &$error){

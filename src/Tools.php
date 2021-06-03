@@ -42,7 +42,7 @@ class Tools{
 		if($request === null){
 			$request = Conform::post();
 			#+ handle the case of no method specified, use request method to determine method
-			if(!$request['method'] && !$request['requests']){ # this is not foolproof, since the input can include a key `method` which would upset this fallback
+			if(empty($request['method']) && empty($request['requests'])){ # this is not foolproof, since the input can include a key `method` which would upset this fallback
 				$request['input'] = $request;
 				$map = ['DELETE'=>'delete','PUT'=>'create_update','POST'=>'create','PATCH'=>'update','GET'=>'read'];
 				$request['method'] = $map[$_SERVER['REQUEST_METHOD']];
