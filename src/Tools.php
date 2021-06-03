@@ -142,7 +142,7 @@ class Tools{
 
 	# end process with minimized json response
 	static function minimized_wrapped_call_response($api_instance, $request=null, $options=[]){
-		if($options['allow_multiple']){
+		if(!empty($options['allow_multiple'])){
 			/*
 			if `allow_multiple`, expect an array of request objects with normal `input` and `method` keys.  Collect the results from each call and return
 			*/
