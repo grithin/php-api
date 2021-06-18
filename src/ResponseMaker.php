@@ -1,4 +1,4 @@
-<?
+<?php
 namespace Grithin\Api;
 
 use \Grithin\Conform;
