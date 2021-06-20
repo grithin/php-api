@@ -2,6 +2,7 @@
 namespace Grithin\Api;
 
 use \Grithin\Http;
+use \Grithin\Url;
 use \Grithin\Conform;
 use \Grithin\Arrays;
 use \Exception;
@@ -134,7 +135,7 @@ class Tools{
 	}
 	# end process with json response
 	function wrapped_call_response($api_instance, $request=null){
-		Http::endJson(self::wrapped_call($api_instance, $request));
+		Http::end_with_json(self::wrapped_call($api_instance, $request));
 	}
 	function wrapped_call_response_debug($api_instance, $request=null){
 		ppe(self::wrapped_call_debug($api_instance, $request));
@@ -156,11 +157,11 @@ class Tools{
 				$return_results = function() use ($results){
 					return $results;
 				};
-				Http::endJson(ResponseMaker::minimize(self::wrapped_call(self::pseudo_api_instance($return_results))));
+				Http::end_with_json(ResponseMaker::minimize(self::wrapped_call(self::pseudo_api_instance($return_results))));
 			}
 
 		}
-		Http::endJson(ResponseMaker::minimize(self::wrapped_call($api_instance, $request)));
+		Http::end_with_json(ResponseMaker::minimize(self::wrapped_call($api_instance, $request)));
 	}
 
 	# create an API instance from a function rather than an API class
