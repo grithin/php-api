@@ -15,12 +15,12 @@ class ResponseMaker{
 			$this->conform = Conform::standard_instance();
 		}
 	}
-	# set response data
+	/** set response data */
 	function data($data){
 		$this->response['data'] = $data;
 	}
-	# determine and set  status, and optionally set data
-	/* Notes
+	/** determine and set  status, and optionally set data */
+	/** Notes
 	-	will merge conform errors into response errors
 	-	will set status to fail if errors present
 	*/
@@ -63,7 +63,7 @@ class ResponseMaker{
 	}
 
 
-	# call result if not previously called
+	/** call result if not previously called */
 	function result_once($data=null){
 		if(!$this->resulted){
 			return $this->result($data);
@@ -71,7 +71,7 @@ class ResponseMaker{
 		return $this->response;
 	}
 
-	/*
+	/**
 	In addition to the handling of the method result in self::result(), this adds an interpretation of the passed data:
 	-	`false` = fail
 	-	`true` = success
@@ -83,7 +83,7 @@ class ResponseMaker{
 		$data = $this->data_interpret($data);
 		return $this->result_once($data);
 	}
-	# special handling of `true` and `false`, interpretted as status indication, and removed from `data`
+	/** special handling of `true` and `false`, interpretted as status indication, and removed from `data` */
 	function data_interpret($data=null){
 		if($data === false){
 			$this->set_fail();
@@ -95,7 +95,7 @@ class ResponseMaker{
 		return $data;
 	}
 
-	/*
+	/**
 	Set errors into response and return false if errors, otherwise return conformed input
 	*/
 	function validate($rules){
@@ -111,7 +111,7 @@ class ResponseMaker{
 		$this->response['errors'][] = ['message'=>$message];
 		return $this;
 	}
-	# deprecated
+	/** deprecated */
 	public function add_error_message(){
 		$renamed = 'error_message_add';
 		return call_user_func_array([$this, $renamed], func_get_args());

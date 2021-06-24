@@ -10,7 +10,7 @@ use \Error;
 
 
 class Tools{
-	# using some method and input, call that instance method (which is potentially deep)
+	/** using some method and input, call that instance method (which is potentially deep) */
 	function call($api_instance, $request){
 		if(!$request->method){
 			throw new \Grithin\Api\Exception('No api method used');
@@ -53,7 +53,7 @@ class Tools{
 		return (object)$request; # to pass by reference
 	}
 
-	/* Philosophy behind wrapping
+	/** Philosophy behind wrapping
 	There is no particular need for the api instance to have untouchable attributes, so might as well just use attributes as a standard
 	*/
 	static function wrap($api_instance, $request=null){
@@ -75,7 +75,7 @@ class Tools{
 		}
 		#+ }
 	}
-	/*
+	/**
 	The api_instance method result is not plainly passed, but rather, interpretted with `ResponseMaker::interpretted_result_once` for special handling of `false`, `true`.  To respond with an actual {data:true}, do: `$this->response_maker->result(true);` within the method
 	*/
 	function wrapped_call($api_instance, $request=null){
@@ -127,13 +127,13 @@ class Tools{
 			throw $e;
 		}
 	}
-	# `wrapped_call`, but without the catches
+	/** `wrapped_call`, but without the catches */
 	function wrapped_call_debug($api_instance, $request=null){
 		self::wrap($api_instance, $request);
 		$method_return = self::call($api_instance, $api_instance->request);
 		return $api_instance->response_maker->interpretted_result_once($method_return);
 	}
-	# end process with json response
+	/** end process with json response */
 	function wrapped_call_response($api_instance, $request=null){
 		Http::end_with_json(self::wrapped_call($api_instance, $request));
 	}
@@ -141,7 +141,7 @@ class Tools{
 		ppe(self::wrapped_call_debug($api_instance, $request));
 	}
 
-	# end process with minimized json response
+	/** end process with minimized json response */
 	static function minimized_wrapped_call_response($api_instance, $request=null, $options=[]){
 		if(!empty($options['allow_multiple'])){
 			/*
@@ -164,7 +164,7 @@ class Tools{
 		Http::end_with_json(ResponseMaker::minimize(self::wrapped_call($api_instance, $request)));
 	}
 
-	# create an API instance from a function rather than an API class
+	/** create an API instance from a function rather than an API class */
 	function pseudo_api_instance($fn, $input=null){
 		if($input === null){
 			$input = Conform::post();
@@ -175,7 +175,7 @@ class Tools{
 		return $api_instance;
 	}
 
-	# remake extra path parts into standard `method` + `input` based on the $Route object
+	/** remake extra path parts into standard `method` + `input` based on the $Route object */
 	function path_to_method($Route=null, &$input=null){
 		# get the unparsed tokens to form them into a part1.part2 style method
 		$method = implode('.', $Route->unparsedTokens);
