@@ -41,7 +41,7 @@ class Tools{
 
 	static function request_resolve($request){
 		if($request === null){
-			$request = Conform::post();
+			$request = Conform::request_post();
 			#+ handle the case of no method specified, use request method to determine method
 			if(empty($request['method']) && empty($request['requests'])){ # this is not foolproof, since the input can include a key `method` which would upset this fallback
 				$request['input'] = $request;
@@ -167,7 +167,7 @@ class Tools{
 	/** create an API instance from a function rather than an API class */
 	function pseudo_api_instance($fn, $input=null){
 		if($input === null){
-			$input = Conform::post();
+			$input = Conform::request_post();
 		}
 		$api_instance = new \StdClass;
 		$api_instance->method = \Closure::bind($fn, $api_instance);
